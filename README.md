@@ -1,4 +1,8 @@
-# WhatsApp Formatted Text
+# Convert Markdown into **WhatsApp Formatted Text** (bold, italic, strikethrough, monospace) with ease.
+
+### ✨ Write in Markdown → Share beautifully on WhatsApp.
+
+## WhatsApp Formatted Text
 
 This tool converts standard **Markdown** into **WhatsApp Formatted Text**.  
 WhatsApp officially supports these text styles:
