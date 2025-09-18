@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Markdown → Unicode (WhatsApp friendly)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; margin: 18px; background: #f7f7f8; color: #111 }
+    h1 { font-size: 18px; margin: 0 0 10px 0 }
+    .box { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap }
+    textarea { width: 100%; min-height: 220px; padding: 10px; box-sizing: border-box; font-family: monospace; font-size: 14px; line-height: 1.45; border: 1px solid #ddd; border-radius: 6px; background: white; resize: vertical }
+    .col { flex: 1 1 420px; min-width: 300px; }
+    pre.output { white-space: pre-wrap; word-break: break-word; background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 6px; min-height: 220px; font-family: monospace; font-size: 14px; line-height: 1.45 }
+    .controls { margin: 8px 0 16px 0; display: flex; gap: 8px; flex-wrap: wrap }
+    button { padding: 8px 10px; border-radius: 6px; border: 1px solid #cfcfcf; background: #fff; cursor: pointer }
+    button.primary { background: #0066ff; color: #fff; border-color: transparent }
+    small.hint { color: #666 }
+  </style>
+</head>
+<body>
+  <h1>Markdown → Unicode (WhatsApp friendly)</h1>
+  <p class="hint">
+  WhatsApp rules: 
+  <strong>*text* → Bold</strong>, 
+  <strong>_text_ → Italic</strong>, 
+  <strong>~text~ → Strikethrough</strong>, 
+  <strong>`text` → Monospace</strong>, 
+  <strong>```block``` → Monospace block</strong>, 
+  <strong>* / - at start of line → Bullet</strong>, 
+  <strong>1. 2. → Numbered list</strong>, 
+  <strong>&gt; at start of line → Quote</strong>.
+</p>
+
+  <div class="box">
+    <div class="col">
+      <label><strong>Input (paste Markdown here)</strong></label>
+      <textarea id="input" placeholder="Paste Markdown..."></textarea>
+      <div class="controls">
+        <button id="btnConvert" class="primary">Convert</button>
+        <button id="btnClear">Clear</button>
+        <button id="btnSample">Load Sample</button>
+      </div>
+    </div>
+
+    <div class="col">
+      <label><strong>Output (result that can be copied to WhatsApp/YT)</strong></label>
+      <pre id="output" class="output" aria-label="Converted output" contenteditable="false"></pre>
+      <div class="controls">
+        <button id="btnCopy">Copy Output</button>
+        <button id="btnDownload">Download .txt</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  const input = document.getElementById('input');
+  const output = document.getElementById('output');
+  const btnConvert = document.getElementById('btnConvert');
+  const btnCopy = document.getElementById('btnCopy');
+  const btnClear = document.getElementById('btnClear');
+  const btnSample = document.getElementById('btnSample');
+  const btnDownload = document.getElementById('btnDownload');
+
+  function convertMarkdown(src) {
+    if (!src) return '';
+    // Remove ``` lines only if the line is empty, but WA supports ``` for code blocks
+    // so we'll keep the ```
+    const lines = src.split(/\r\n|\n/);
+    const out = [];
+
+    for (let raw of lines) {
+      const line = raw.replace(/\r/g, '');
+      const trimmed = line.trim();
+      let m;
+
+      // Bullet: * or - → keep as is
+      if ((m = trimmed.match(/^([*\-])\s+(.*)$/))) {
+        out.push(m[1] + ' ' + stripInline(m[2]));
+        continue;
+      }
+
+      // Numbered list → keep as is
+      if ((m = line.match(/^(\d+\.)\s+(.*)$/))) {
+        out.push(m[1] + ' ' + stripInline(m[2]));
+        continue;
+      }
+
+      // Quote: > → keep as is, unless empty
+      if ((m = trimmed.match(/^\>\s?(.*)$/))) {
+        if (m[1].trim().length > 0) {
+          out.push('> ' + stripInline(m[1]));
+        } else {
+          out.push(''); // keep empty line
+        }
+        continue;
+      }
+
+      // Heading (#) → plain
+      if ((m = trimmed.match(/^#+\s*(.*)$/))) {
+        out.push(stripInline(m[1]));
+        continue;
+      }
+
+      // HR (---/***) → can be replaced with a regular line
+      if (/^(?:-{3,}|\*{3,})\s*$/.test(trimmed)) {
+        out.push('────────────');
+        continue;
+      }
+
+      out.push(stripInline(line));
+    }
+
+    return out.join('\n').replace(/\s+$/,'');
+  }
+
+  // Note: in WA, we keep the markers, we don't remove them
+ 
+  function stripInline(s) {
+    if (s === null || s === undefined) return '';
+
+    // Italic: *...* → _..._ (but don't capture **...**)
+    s = s.replace(/(^|[^*])\*([^*][\s\S]*?)\*(?!\*)/g, '$1_$2_');
+  
+    // Bold: **...** or __...__ → *...*
+    s = s.replace(/\*\*([\s\S]*?)\*\*/g, '*$1*');
+    s = s.replace(/__([\s\S]*?)__/g, '*$1*');
+
+    // Strikethrough: ~~...~~ → ~...~
+    s = s.replace(/~~([\s\S]*?)~~/g, '~$1~');
+
+    // Monospace inline: `...`
+    s = s.replace(/`([\s\S]*?)`/g, '`$1`');
+
+    return s;
+  }
+
+  function doConvert() {
+    output.textContent = convertMarkdown(input.value);
+  }
+
+  btnConvert.addEventListener('click', doConvert);
+  input.addEventListener('input', doConvert);
+
+  btnCopy.addEventListener('click', function(){
+    const text = output.textContent;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      btnCopy.textContent = 'Copied ✓';
+      setTimeout(()=> btnCopy.textContent = 'Copy Output', 1200);
+    }).catch(() => {
+      alert('Failed to copy — please manually select and copy.');
+    });
+  });
+
+  btnClear.addEventListener('click', function(){
+    input.value = '';
+    output.textContent = '';
+    input.focus();
+  });
+
+  btnSample.addEventListener('click', function(){
+    input.value = [
+      '# Big title',
+      '',
+      '1. *First step*',
+      '- _Italic item_',
+      '* **Bold item**',
+      '',
+      '> ~Strikethrough quote~',
+      '',
+      '---',
+      '',
+      '`inline code` and code block:',
+      '```',
+      'console.log("hello WA");',
+      '```'
+    ].join('\n');
+    doConvert();
+  });
+
+  btnDownload.addEventListener('click', function(){
+    const text = output.textContent || '';
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'converted_wa.txt';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  doConvert();
+})();
+</script>
+
+</body>
+</html>
