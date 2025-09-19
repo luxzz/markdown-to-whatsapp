@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Status: Active](https://img.shields.io/badge/status-active-success.svg)]()
 # Convert Markdown into **WhatsApp Formatted Text** (bold, italic, strikethrough, monospace) with ease.
 
 ### ✨ Write in Markdown → Share beautifully on WhatsApp.
