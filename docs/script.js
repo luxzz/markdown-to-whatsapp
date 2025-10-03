@@ -40,6 +40,7 @@ const PLACEHOLDERS = {
  * - Triple backticks must be on their own line; content inside is preserved verbatim; no language fences.
  * - Links [text](url) become "text (url)".
  * - ~~strikethrough~~ becomes ~strikethrough~ (WhatsApp dialect).
+ * - Horizontal rules (---, ***, ___) become ───.
  * - Headers (# ... ######) render as bold with a leading emoji; inner * and _ are stripped intentionally.
  * - Bold (** or __) and italics (* or _) are normalized to WhatsApp syntax; *** becomes *_..._*.
  * - Inline code (`...`), blockquotes (>), tables, and images are not specially handled.
@@ -72,7 +73,10 @@ function convertTextToWhatsapp(markdownText) {
         // Safe because later passes replace conflicting markers with placeholders.
         processedLine = processedLine.replace(/\\([\\`*_{}[\]()#+.!|~>-])/g, '$1');
 
-        // 1.3.2 Direct link conversion: [text](url) -> text (url)
+        // 1.3.2 Horizontal rules: --- or *** or ___ -> ───
+        processedLine = processedLine.replace(/^(\s*)(-{3,}|_{3,}|\*{3,})\s*$/, '$1───');
+
+        // 1.3.3 Direct link conversion: [text](url) -> text (url)
         processedLine = processedLine.replace(/\[([^\]]+)]\(([^)]+)\)/g, '$1 ($2)');
 
         // 1.3.3 Strikethrough: ~~text~~ -> ~text~ (WhatsApp)
