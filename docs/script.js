@@ -3,16 +3,16 @@
 // =================================================================================================
 
 /**
- * Emojis to prepend to header lines by level.
+ * Emojis to prepend to header lines by level. //Shadow Disabled token by Luxzz
  * @type {Record}
  */
 const HEADER_EMOJIS = {
-    1: '📌',
-    2: '🟠',
-    3: '🟡',
-    4: '🟢',
-    5: '🔵',
-    6: '⚫️'
+    1: '',
+    2: '',
+    3: '',
+    4: '',
+    5: '',
+    6: ''
 };
 
 /**
