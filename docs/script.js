@@ -50,6 +50,9 @@ const PLACEHOLDERS = {
  * @returns {string} The converted WhatsApp-compatible text.
  */
 function convertTextToWhatsapp(markdownText) {
+    console.log('Input Markdown:', markdownText);
+    debugger; // Pause here for step-through debugging in browser dev tools
+
     let inCodeBlock = false;
 
     // --- Phase 1: Tokenization ---
@@ -89,9 +92,12 @@ function convertTextToWhatsapp(markdownText) {
             let content = headerMatch[2].trim();
             // Strip pre-existing * and _ to avoid nested emphasis in headers (intentional policy).
             content = content.replace(/[*_]/g, '');
-            const emoji = HEADER_EMOJIS[level] || HEADER_EMOJIS[6];
+            let emoji = HEADER_EMOJIS[level] || HEADER_EMOJIS[6];
+            if(emoji.length > 0){
+                emoji=`${emoji} `;
+            }
             // Tokenize the entire header line for bolding.
-            processedLine = `${PLACEHOLDERS.BOLD}${emoji} ${content}${PLACEHOLDERS.BOLD}`;
+            processedLine = `${PLACEHOLDERS.BOLD}${emoji}${content}${PLACEHOLDERS.BOLD}`;
         }
 
         // 1.3.5 Ordered list spacing: normalize to a single space after "N." at line start.
@@ -113,14 +119,17 @@ function convertTextToWhatsapp(markdownText) {
     });
 
     const tokenizedText = tokenizedLines.join('\n');
+    console.log('Tokenized Text:', tokenizedText);
 
     // --- Phase 2: Rendering ---
     // Replace placeholders with final WhatsApp formatting.
-    return tokenizedText
+    const finalOutput = tokenizedText
         .replace(new RegExp(PLACEHOLDERS.LIST_ITEM, 'g'), '*')
         .replace(new RegExp(PLACEHOLDERS.BOLD_ITALIC_OPEN, 'g'), '*_')
         .replace(new RegExp(PLACEHOLDERS.BOLD_ITALIC_CLOSE, 'g'), '_*')
         .replace(new RegExp(PLACEHOLDERS.BOLD, 'g'), '*');
+    console.log('Final Output:', finalOutput);
+    return finalOutput;
 }
 
 
