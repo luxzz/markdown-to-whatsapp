@@ -3,8 +3,8 @@
 // =================================================================================================
 
 /**
- * Emojis to prepend to header lines by level. //Shadow Disabled token by Luxzz
- * @type {Record}
+ * Emojis to prepend to header lines by level.
+ * @type {Record<number, string>}
  */
 const HEADER_EMOJIS = {
     1: '',
@@ -70,17 +70,15 @@ function convertTextToWhatsapp(markdownText) {
             return processedLine;
         }
         
-		// --- QUOTE HANDLING RULE ---
-        // Quote: > → biarkan, kecuali kosong
+        // 1.2.1 Quote handling: convert blockquotes to WhatsApp format, preserving non-empty lines.
         const trimmed = processedLine.trim();
-        let m;
-        if ((m = trimmed.match(/^\>\s?(.*)$/))) {
-            if (m[1].trim().length > 0) {
-                // You may define stripInline as needed, or simply:
-                processedLine = '> ' + m[1].trim();
+        const quoteMatch = trimmed.match(/^>\s?(.*)$/);
+        if (quoteMatch) {
+            if (quoteMatch[1].trim().length > 0) {
+                processedLine = '> ' + quoteMatch[1].trim();
             } else {
                 processedLine = '';
-            }      
+            }
         }
 
         // 1.3 Tokenization and direct conversion pipeline (order is critical).
@@ -95,7 +93,7 @@ function convertTextToWhatsapp(markdownText) {
         // 1.3.3 Direct link conversion: [text](url) -> text (url)
         processedLine = processedLine.replace(/\[([^\]]+)]\(([^)]+)\)/g, '$1 ($2)');
 
-        // 1.3.3 Strikethrough: ~~text~~ -> ~text~ (WhatsApp)
+        // 1.3.4 Strikethrough: ~~text~~ -> ~text~ (WhatsApp)
         processedLine = processedLine.replace(/~~(.+?)~~/g, '~$1~');
 
         // 1.3.4 Headers: convert to bold + emoji; strip inner emphasis markers by policy.
@@ -106,8 +104,8 @@ function convertTextToWhatsapp(markdownText) {
             // Strip pre-existing * and _ to avoid nested emphasis in headers (intentional policy).
             content = content.replace(/[*_]/g, '');
             let emoji = HEADER_EMOJIS[level] || HEADER_EMOJIS[6];
-            if(emoji.length > 0){
-                emoji=`${emoji} `;
+            if (emoji.length > 0) {
+                emoji = `${emoji} `;
             }
             // Tokenize the entire header line for bolding.
             processedLine = `${PLACEHOLDERS.BOLD}${emoji}${content}${PLACEHOLDERS.BOLD}`;
