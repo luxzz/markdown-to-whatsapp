@@ -69,6 +69,19 @@ function convertTextToWhatsapp(markdownText) {
         if (inCodeBlock) {
             return processedLine;
         }
+        
+		// --- QUOTE HANDLING RULE ---
+        // Quote: > → biarkan, kecuali kosong
+        const trimmed = processedLine.trim();
+        let m;
+        if ((m = trimmed.match(/^\>\s?(.*)$/))) {
+            if (m[1].trim().length > 0) {
+                // You may define stripInline as needed, or simply:
+                processedLine = '> ' + m[1].trim();
+            } else {
+                processedLine = '';
+            }      
+        }
 
         // 1.3 Tokenization and direct conversion pipeline (order is critical).
 
