@@ -111,11 +111,11 @@ function convertTextToWhatsapp(markdownText) {
             processedLine = `${PLACEHOLDERS.BOLD}${emoji}${content}${PLACEHOLDERS.BOLD}`;
         }
 
-        // 1.3.5 Ordered list spacing: normalize to a single space after "N." at line start.
-        processedLine = processedLine.replace(/^(\s*\d+\.)\s+/g, '$1 ');
+        // 1.3.5 Ordered list spacing: normalize to a single space after "N." at line start, flattening to single level.
+        processedLine = processedLine.replace(/^(\s*)(\d+\.)\s+/g, '$2 ');
 
-        // 1.3.6 List items: replace unordered list markers with a placeholder.
-        processedLine = processedLine.replace(/^(\s*)[*+-]\s+/g, `$1${PLACEHOLDERS.LIST_ITEM} `);
+        // 1.3.6 List items: replace unordered list markers with a placeholder, flattening to single level.
+        processedLine = processedLine.replace(/^(\s*)[*+-]\s+/g, `${PLACEHOLDERS.LIST_ITEM} `);
 
         // 1.3.7 Combined styles tokenization: ***...*** or ___...___ -> placeholders first to avoid conflicts.
         processedLine = processedLine.replace(/(\*\*\*|___)(.+?)\1/g, `${PLACEHOLDERS.BOLD_ITALIC_OPEN}$2${PLACEHOLDERS.BOLD_ITALIC_CLOSE}`);
